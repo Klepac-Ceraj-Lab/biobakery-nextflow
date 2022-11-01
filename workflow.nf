@@ -7,7 +7,7 @@ workflow {
     read_pairs_ch = Channel
         .fromFilePairs(params.reads, size: 8)
 
-    kneaddata(read_pairs_ch) | view
+    kneaddata(read_pairs_ch)
 }
 
 process kneaddata {
@@ -18,7 +18,10 @@ process kneaddata {
     tuple val(sample), path(reads)
 
     output:
-    stdout
+    tuple val(sample), path("${sample}_kneaddata_paired_1.fastq.gz")        , emit: forward
+    tuple val(sample), path("${sample}_kneaddata_paired_2.fastq.gz")        , emit: reverse
+    tuple val(sample), path("${sample}_kneaddata*.fastq.gz"), optional:true , emit: others
+    tuple val(sample), path("${sample}_kneaddata.log")                      , emit: log
 
     script:
     def forward = reads.findAll{ read-> read =~ /.+_R1_.+/ }
@@ -30,6 +33,9 @@ process kneaddata {
     cat ${forward.join(" ")} > ${sample}_1.fastq.gz
     cat ${reverse.join(" ")} > ${sample}_2.fastq.gz
 
+    kneaddata --input ${sample}_1.fastq.gz --input ${sample}_2.fastq.gz --reference-db /hg37 --output ./ --output-prefix ${sample}_kneaddata --trimmomatic /opt/conda/share/trimmomatic
+
+    gzip *.fastq
     """  
 }
  
