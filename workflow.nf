@@ -1,22 +1,36 @@
 #!/usr/bin/env nextflow
- 
-/*
- * The following pipeline parameters specify the refence genomes
- * and read pairs and can be provided as command line options
- */
 
 params.reads = "$baseDir/test/rawfastq/*_L00{1,2,3,4}_R{1,2}_001.fastq.gz"
-params.outdir = "results"
-
+params.outdir = "$baseDir/output"
 
 workflow {
     read_pairs_ch = Channel
         .fromFilePairs(params.reads, size: 8)
-        .view()
- 
-    // INDEX(params.transcriptome)
-    // FASTQC(read_pairs_ch)
-    // QUANT(INDEX.out, read_pairs_ch)
+
+    kneaddata(read_pairs_ch) | view
+}
+
+process kneaddata {
+    tag "$sample"
+    publishDir params.outdir
+
+    input:
+    tuple val(sample), path(reads)
+
+    output:
+    stdout
+
+    script:
+    def forward = reads.findAll{ read-> read =~ /.+_R1_.+/ }
+    def reverse = reads.findAll{ read-> read =~ /.+_R2_.+/ }
+    
+    """
+    echo $sample
+
+    cat ${forward.join(" ")} > ${sample}_1.fastq.gz
+    cat ${reverse.join(" ")} > ${sample}_2.fastq.gz
+
+    """  
 }
  
 process INDEX {
