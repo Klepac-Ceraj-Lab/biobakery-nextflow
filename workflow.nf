@@ -12,7 +12,7 @@ workflow {
 
 process kneaddata {
     tag "$sample"
-    publishDir params.outdir
+    publishDir "$params.outdir/kneaddata"
 
     input:
     tuple val(sample), path(reads)
