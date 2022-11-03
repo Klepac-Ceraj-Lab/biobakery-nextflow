@@ -46,7 +46,7 @@ process kneaddata {
 }
 
 process metaphlan {
-    // tag = "metaphlan on $sample"
+    tag "metaphlan on $sample"
     publishDir "$params.outdir/metaphlan", pattern: "{*.tsv,*.sam}"
 
     input:
@@ -71,6 +71,7 @@ process metaphlan {
 }
  
 process humann {
+    tag "humann on $sample"
     publishDir "$params.outdir/humann/main"
 
     input:
@@ -91,6 +92,7 @@ process humann {
 }
 
 process humann_regroup {
+    tag "humann_regroup on $sample"
     publishDir "$params.outdir/humann/regroup"
 
     input:
@@ -113,6 +115,7 @@ process humann_regroup {
 }   
 
 process humann_rename {
+    tag "humann_rename on $sample"
     publishDir "$params.outdir/humann/rename"
 
     input:
