@@ -9,10 +9,11 @@ workflow {
     read_pairs_ch = Channel
         .fromFilePairs(params.reads, size: 8)
 
-    knead_out = kneaddata(read_pairs_ch)
+    knead_out     = kneaddata(read_pairs_ch)
     metaphlan_out = metaphlan(knead_out[0], knead_out[1])
-    humann(metaphlan_out[0], metaphlan_out[1], metaphlan_out[2])
-    
+    humann_out    = humann(metaphlan_out[0], metaphlan_out[1], metaphlan_out[2])
+    regroup_out   = humann_regroup(humann_out[0], humann_out[1])
+    humann_rename(regroup_out)
 }
 
 process kneaddata {
@@ -84,7 +85,6 @@ process humann {
     path "${sample}_pathcoverage.tsv"
 
     script:
-
     """
     humann --input $catkneads --taxonomic-profile $profile --output ./ --threads ${params.humann_procs} --remove-temp-output --search-mode uniref90 --output-basename $sample
     """
@@ -95,7 +95,7 @@ process humann_regroup {
 
     input:
     val  sample
-    path profile
+    path genefamilies
 
     output:
     val(sample) , emit: sample
@@ -106,8 +106,32 @@ process humann_regroup {
     script:
 
     """
-    humann_regroup_table --input $profile --output ${sample}_ecs.tsv --groups uniref90_level4ec"
-    humann_regroup_table --input $profile --output ${sample}_kos.tsv --groups uniref90_ko"
-    humann_regroup_table --input $profile --output ${sample}_pfams.tsv --groups uniref90_pfam"
+    humann_regroup_table --input $genefamilies --output ${sample}_ecs.tsv --groups uniref90_level4ec
+    humann_regroup_table --input $genefamilies --output ${sample}_kos.tsv --groups uniref90_ko
+    humann_regroup_table --input $genefamilies --output ${sample}_pfams.tsv --groups uniref90_pfam
+    """
+}   
+
+process humann_rename {
+    publishDir "$params.outdir/humann/rename"
+
+    input:
+    val  sample
+    path ecs
+    path kos
+    path pfams
+
+    output:
+    val(sample) , emit: sample
+    path "${sample}_ecs_rename.tsv"
+    path "${sample}_kos_rename.tsv"
+    path "${sample}_pfams_rename.tsv"
+
+    script:
+
+    """
+    humann_rename_table --input $ecs   --output ${sample}_ecs_rename.tsv   --names ec
+    humann_rename_table --input $kos   --output ${sample}_kos_rename.tsv   --names kegg-orthology
+    humann_rename_table --input $pfams --output ${sample}_pfams_rename.tsv --names pfam
     """
 }
