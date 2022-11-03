@@ -2,16 +2,17 @@
 
 params.reads = "$baseDir/test/rawfastq/*_L00{1,2,3,4}_R{1,2}_001.fastq.gz"
 params.outdir = "$baseDir/output"
-params.procs = 8
+params.metaphlan_procs = 8
+params.humann_procs = 8
 
 workflow {
     read_pairs_ch = Channel
         .fromFilePairs(params.reads, size: 8)
 
     knead_out = kneaddata(read_pairs_ch)
-    metaphlan(knead_out[0])
+    metaphlan_out = metaphlan(knead_out[0], knead_out[1])
+    humann(metaphlan_out[0], knead_out[1])
     
-    // metaphlan(knead_pairs)
 }
 
 process kneaddata {
@@ -22,9 +23,10 @@ process kneaddata {
     tuple val(sample), path(reads)
 
     output:
-    tuple val(sample), path("${sample}_kneaddata_paired_{1,2}.fastq.gz") , emit: paired
-    path("${sample}_kneaddata*.fastq.gz")                , optional:true , emit: others
-    path("${sample}_kneaddata.log")                                      , emit: log
+    tuple val(sample)                                     , emit: sample
+    path("${sample}_kneaddata_paired_{1,2}.fastq.gz")     , emit: paired
+    path("${sample}_kneaddata*.fastq.gz") , optional:true , emit: others
+    path("${sample}_kneaddata.log")                       , emit: log
 
     script:
     def forward = reads.findAll{ read-> read =~ /.+_R1_.+/ }
@@ -47,7 +49,8 @@ process metaphlan {
     publishDir "$params.outdir/metaphlan"
 
     input:
-    tuple val(sample), path(kneads)
+    tuple val(sample)
+    path(kneads)
 
     output:
     tuple val(sample), path("${sample}_profile.tsv") , emit: profile
@@ -60,54 +63,28 @@ process metaphlan {
 
     """
     cat $forward $reverse > ${sample}_grouped.fastq.gz
-    metaphlan ${sample}_grouped.fastq.gz ${sample}_profile.tsv --bowtie2out ${sample}_bowtie2.tsv --samout ${sample}.sam --input_type fastq --nproc ${params.procs}
+    metaphlan ${sample}_grouped.fastq.gz ${sample}_profile.tsv --bowtie2out ${sample}_bowtie2.tsv --samout ${sample}.sam --input_type fastq --nproc ${params.metaphlan_procs}
     """
 }
  
-process INDEX {
-    tag "$transcriptome.simpleName"
- 
+process humann {
+    publishDir "$params.outdir/humann/main"
+
     input:
-    path transcriptome
- 
+    tuple val(sample), path(profile)
+    path kneads
+
     output:
-    path 'index'
- 
+    tuple val(sample), path("${sample}_genefamilies.tsv") , emit: genefamilies
+    path "${sample}_pathabundance.tsv"
+    path "${sample}_pathcoverage.tsv"
+
     script:
+    def forward = kneads[0]
+    def reverse = kneads[1]
+
     """
-    salmon index --threads $task.cpus -t $transcriptome -i index
-    """
-}
- 
-process FASTQC {
-    tag "FASTQC on $sample_id"
-    publishDir params.outdir
- 
-    input:
-    tuple val(sample_id), path(reads)
- 
-    output:
-    path "fastqc_${sample_id}_logs"
- 
-    script:
-    """
-    fastqc.sh "$sample_id" "$reads"
-    """
-}
- 
-process QUANT {
-    tag "$pair_id"
-    publishDir params.outdir
- 
-    input:
-    path index
-    tuple val(pair_id), path(reads)
- 
-    output:
-    path pair_id
- 
-    script:
-    """
-    salmon quant --threads $task.cpus --libType=U -i $index -1 ${reads[0]} -2 ${reads[1]} -o $pair_id
+    cat $forward $reverse > ${sample}_grouped.fastq.gz
+    humann --input ${sample}_grouped.fastq.gz --taxonomic-profile $profile --output ./ --threads ${params.humann_procs} --remove-temp-output --search-mode uniref90 --output-basename $sample
     """
 }
