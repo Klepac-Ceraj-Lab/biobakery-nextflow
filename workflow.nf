@@ -9,22 +9,22 @@ workflow {
         .fromFilePairs(params.reads, size: 8)
 
     knead_out = kneaddata(read_pairs_ch)
-    meta_out  = metaphlan(knead_out[0])
-    compress_knead(knead_out[0], knead_out[1])
+    metaphlan(knead_out[0])
     
     // metaphlan(knead_pairs)
 }
 
 process kneaddata {
     tag "kneaddata $sample"
+    publishDir "$params.outdir/kneaddata"
 
     input:
     tuple val(sample), path(reads)
 
     output:
-    tuple val(sample), path("${sample}_kneaddata_paired_{1,2}.fastq") , emit: paired
-    path("${sample}_kneaddata*.fastq")                , optional:true , emit: others
-    path("${sample}_kneaddata.log")                                   , emit: log
+    tuple val(sample), path("${sample}_kneaddata_paired_{1,2}.fastq.gz") , emit: paired
+    path("${sample}_kneaddata*.fastq.gz")                , optional:true , emit: others
+    path("${sample}_kneaddata.log")                                      , emit: log
 
     script:
     def forward = reads.findAll{ read-> read =~ /.+_R1_.+/ }
@@ -37,23 +37,9 @@ process kneaddata {
     cat ${reverse.join(" ")} > ${sample}_2.fastq.gz
 
     kneaddata --input ${sample}_1.fastq.gz --input ${sample}_2.fastq.gz --reference-db /hg37 --output ./ --output-prefix ${sample}_kneaddata --trimmomatic /opt/conda/share/trimmomatic
-    """  
-}
 
-process compress_knead {
-    publishDir "$params.outdir/kneaddata"
-    
-    input:
-    tuple val(sample), path(reads)
-    
-    output:
-    tuple val(sample), path("${sample}_kneaddata_paired_{1,2}.fastq.gz") , emit: paired
-    path("${sample}_kneaddata*.fastq.gz")                , optional:true , emit: others
-    
-    script:
-    """
-    gzip --keep *.fastq
-    """
+    gzip *.fastq
+    """  
 }
 
 process metaphlan {
@@ -73,7 +59,7 @@ process metaphlan {
     def reverse = kneads[1]
 
     """
-    cat $forward $reverse > ${sample}_grouped.fastq
+    cat $forward $reverse > ${sample}_grouped.fastq.gz
     metaphlan ${sample}_grouped.fastq.gz ${sample}_profile.tsv --bowtie2out ${sample}_bowtie2.tsv --samout ${sample}.sam --input_type fastq --nproc ${params.procs}
     """
 }
