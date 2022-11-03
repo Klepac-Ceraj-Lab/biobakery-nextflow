@@ -11,7 +11,7 @@ workflow {
 
     knead_out = kneaddata(read_pairs_ch)
     metaphlan_out = metaphlan(knead_out[0], knead_out[1])
-    humann(metaphlan_out[0], knead_out[1])
+    humann(metaphlan_out[0], metaphlan_out[1], metaphlan_out[2])
     
 }
 
@@ -23,7 +23,7 @@ process kneaddata {
     tuple val(sample), path(reads)
 
     output:
-    tuple val(sample)                                     , emit: sample
+    val(sample)                                           , emit: sample
     path("${sample}_kneaddata_paired_{1,2}.fastq.gz")     , emit: paired
     path("${sample}_kneaddata*.fastq.gz") , optional:true , emit: others
     path("${sample}_kneaddata.log")                       , emit: log
@@ -46,14 +46,16 @@ process kneaddata {
 
 process metaphlan {
     // tag = "metaphlan on $sample"
-    publishDir "$params.outdir/metaphlan"
+    publishDir "$params.outdir/metaphlan", pattern: "{*.tsv,*.sam}"
 
     input:
-    tuple val(sample)
+    val(sample)
     path(kneads)
 
     output:
-    tuple val(sample), path("${sample}_profile.tsv") , emit: profile
+    val(sample)                   , emit: sample
+    path("${sample}_profile.tsv") , emit: profile
+    path "${sample}_grouped.fastq.gz"
     path "${sample}_bowtie2.tsv"
     path "${sample}.sam"
 
@@ -71,20 +73,41 @@ process humann {
     publishDir "$params.outdir/humann/main"
 
     input:
-    tuple val(sample), path(profile)
-    path kneads
+    val  sample
+    path profile
+    path catkneads
 
     output:
-    tuple val(sample), path("${sample}_genefamilies.tsv") , emit: genefamilies
+    val(sample)                        , emit: sample
+    path("${sample}_genefamilies.tsv") , emit: genefamilies
     path "${sample}_pathabundance.tsv"
     path "${sample}_pathcoverage.tsv"
 
     script:
-    def forward = kneads[0]
-    def reverse = kneads[1]
 
     """
-    cat $forward $reverse > ${sample}_grouped.fastq.gz
-    humann --input ${sample}_grouped.fastq.gz --taxonomic-profile $profile --output ./ --threads ${params.humann_procs} --remove-temp-output --search-mode uniref90 --output-basename $sample
+    humann --input $catkneads --taxonomic-profile $profile --output ./ --threads ${params.humann_procs} --remove-temp-output --search-mode uniref90 --output-basename $sample
+    """
+}
+
+process humann_regroup {
+    publishDir "$params.outdir/humann/regroup"
+
+    input:
+    val  sample
+    path profile
+
+    output:
+    val(sample) , emit: sample
+    path "${sample}_ecs.tsv"
+    path "${sample}_kos.tsv"
+    path "${sample}_pfams.tsv"
+
+    script:
+
+    """
+    humann_regroup_table --input $profile --output ${sample}_ecs.tsv --groups uniref90_level4ec"
+    humann_regroup_table --input $profile --output ${sample}_kos.tsv --groups uniref90_ko"
+    humann_regroup_table --input $profile --output ${sample}_pfams.tsv --groups uniref90_pfam"
     """
 }
