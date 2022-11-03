@@ -24,10 +24,10 @@ process kneaddata {
     tuple val(sample), path(reads)
 
     output:
-    val(sample)                                           , emit: sample
-    path("${sample}_kneaddata_paired_{1,2}.fastq.gz")     , emit: paired
-    path("${sample}_kneaddata*.fastq.gz") , optional:true , emit: others
-    path("${sample}_kneaddata.log")                       , emit: log
+    val  sample                                          , emit: sample
+    path "${sample}_kneaddata_paired_{1,2}.fastq.gz"     , emit: paired
+    path "${sample}_kneaddata*.fastq.gz" , optional:true , emit: others
+    path "${sample}_kneaddata.log"                       , emit: log
 
     script:
     def forward = reads.findAll{ read-> read =~ /.+_R1_.+/ }
@@ -50,12 +50,12 @@ process metaphlan {
     publishDir "$params.outdir/metaphlan", pattern: "{*.tsv,*.sam}"
 
     input:
-    val(sample)
-    path(kneads)
+    val sample
+    path kneads
 
     output:
-    val(sample)                   , emit: sample
-    path("${sample}_profile.tsv") , emit: profile
+    val  sample                  , emit: sample
+    path "${sample}_profile.tsv" , emit: profile
     path "${sample}_grouped.fastq.gz"
     path "${sample}_bowtie2.tsv"
     path "${sample}.sam"
@@ -79,8 +79,8 @@ process humann {
     path catkneads
 
     output:
-    val(sample)                        , emit: sample
-    path("${sample}_genefamilies.tsv") , emit: genefamilies
+    val  sample                       , emit: sample
+    path "${sample}_genefamilies.tsv" , emit: genefamilies
     path "${sample}_pathabundance.tsv"
     path "${sample}_pathcoverage.tsv"
 
@@ -98,7 +98,7 @@ process humann_regroup {
     path genefamilies
 
     output:
-    val(sample) , emit: sample
+    val  sample , emit: sample
     path "${sample}_ecs.tsv"
     path "${sample}_kos.tsv"
     path "${sample}_pfams.tsv"
@@ -122,7 +122,7 @@ process humann_rename {
     path pfams
 
     output:
-    val(sample) , emit: sample
+    val  sample , emit: sample
     path "${sample}_ecs_rename.tsv"
     path "${sample}_kos_rename.tsv"
     path "${sample}_pfams_rename.tsv"
