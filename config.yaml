@@ -1,0 +1,15 @@
+
+kneaddata:
+    memory: '8G'
+    time:   '2h'
+    procs:   8
+
+metaphlan:
+    memory: '8G'
+    time:   '4h'
+    procs:   8
+
+humann:
+    memory: '24G'
+    time:   '12h'
+    procs:   16
