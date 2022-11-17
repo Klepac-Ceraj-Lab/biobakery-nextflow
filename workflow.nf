@@ -1,11 +1,8 @@
 #!/usr/bin/env nextflow
 
-params.reads = "$projectDir/test/rawfastq/*_L00{1,2,3,4}_R{1,2}_001.fastq.gz"
-params.outdir = "$projectDir/output"
-
 workflow {
     read_pairs_ch = Channel
-        .fromFilePairs(params.reads, size: 8)
+        .fromFilePairs("$projectDir/$params.readsdir/$params.filepattern", size: 8)
 
     knead_out     = kneaddata(read_pairs_ch)
     metaphlan_out = metaphlan(knead_out[0], knead_out[1])
@@ -17,10 +14,7 @@ workflow {
 process kneaddata {
     tag "kneaddata $sample"
     publishDir "$params.outdir/kneaddata"
-    cpus params.kneaddata.procs
-    memory params.kneaddata.memory
-    time params.kneaddata.time
-
+  
     input:
     tuple val(sample), path(reads)
 
@@ -49,10 +43,6 @@ process kneaddata {
 process metaphlan {
     tag "metaphlan on $sample"
     publishDir "$params.outdir/metaphlan", pattern: "{*.tsv,*.sam}"
-    cpus params.metaphlan.procs
-    memory params.metaphlan.memory
-    time params.metaphlan.time
-
 
     input:
     val sample
@@ -78,10 +68,6 @@ process metaphlan {
 process humann {
     tag "humann on $sample"
     publishDir "$params.outdir/humann/main"
-    cpus params.humann.procs
-    memory params.humann.memory
-    time params.humann.time
-
 
     input:
     val  sample
