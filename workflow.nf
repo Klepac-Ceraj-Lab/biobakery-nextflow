@@ -14,7 +14,7 @@ workflow {
 process kneaddata {
     tag "kneaddata $sample"
     publishDir "$params.outdir/kneaddata"
-    time { time * task.attempt}
+    time { workflow.profile == 'standard' ? '1000d' : time * task.attempt }
 
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
     maxRetries 3
