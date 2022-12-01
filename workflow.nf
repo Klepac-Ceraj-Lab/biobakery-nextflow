@@ -14,7 +14,7 @@ workflow {
 process kneaddata {
     tag "kneaddata $sample"
     publishDir "$params.outdir/kneaddata"
-    time { workflow.profile == 'standard' ? '1000d' : time * task.attempt }
+    time { workflow.profile == 'standard' ? null : time * task.attempt }
 
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
     maxRetries 3
@@ -40,6 +40,7 @@ process kneaddata {
 
     kneaddata --input ${sample}_1.fastq.gz --input ${sample}_2.fastq.gz --reference-db /hg37 --output ./ --processes ${task.cpus} --output-prefix ${sample}_kneaddata --trimmomatic /opt/conda/share/trimmomatic
 
+    rm ${sample}_1.fastq.gz ${sample}_2.fastq.gz
     gzip *.fastq
     """  
 }
@@ -57,7 +58,7 @@ process metaphlan {
     path "${sample}_profile.tsv" , emit: profile
     path "${sample}_grouped.fastq.gz"
     path "${sample}_bowtie2.tsv"
-    path "${sample}.sam"
+    path "${sample}.sam.bz2"
 
     script:
     def forward = kneads[0]
@@ -66,12 +67,18 @@ process metaphlan {
     """
     cat $forward $reverse > ${sample}_grouped.fastq.gz
     metaphlan ${sample}_grouped.fastq.gz ${sample}_profile.tsv --bowtie2out ${sample}_bowtie2.tsv --samout ${sample}.sam --input_type fastq --nproc ${task.cpus}
+    bzip2 ${sample}.sam
     """
 }
  
 process humann {
     tag "humann on $sample"
     publishDir "$params.outdir/humann/main"
+    memory { workflow.profile == 'standard' ? null : memory * task.attempt }
+
+    errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
+    maxRetries 3
+
 
     input:
     val  sample
@@ -87,6 +94,7 @@ process humann {
     script:
     """
     humann --input $catkneads --taxonomic-profile $profile --output ./ --threads ${task.cpus} --remove-temp-output --search-mode uniref90 --output-basename $sample
+    rm $catkneads
     """
 }
 

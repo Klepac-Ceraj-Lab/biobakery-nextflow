@@ -6,6 +6,6 @@ by Kevin Bonham, PhD
 - `MetaPhlAn`
 - `HUMAnN`
 
-## Setup 
+## Setup
 
 **TODO**
