@@ -2,7 +2,7 @@
 
 workflow {
     read_pairs_ch = Channel
-        .fromFilePairs("$params.readsdir/$params.filepattern", size: 8)
+        .fromFilePairs("$params.readsdir/$params.filepattern", size: [2, 8])
 
     knead_out     = kneaddata(read_pairs_ch)
     metaphlan_out = metaphlan(knead_out[0], knead_out[1])
