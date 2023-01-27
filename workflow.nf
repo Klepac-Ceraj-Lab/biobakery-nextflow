@@ -2,7 +2,7 @@
 
 workflow {
     read_pairs_ch = Channel
-        .fromFilePairs("$params.readsdir/$params.filepattern", size: -1)
+        .fromFilePairs("$params.readsdir/$params.filepattern", size: 2)
 
     knead_out     = kneaddata(read_pairs_ch)
     metaphlan_out = metaphlan(knead_out[0], knead_out[1])
@@ -28,18 +28,12 @@ process kneaddata {
     path "${sample}_kneaddata.log"                       , emit: log
 
     script:
-    def forward = reads.findAll{ read-> read =~ /.+_R1_.+/ }
-    def reverse = reads.findAll{ read-> read =~ /.+_R2_.+/ }
     
     """
     echo $sample
 
-    cat ${forward.join(" ")} > ${sample}_1.fastq.gz
-    cat ${reverse.join(" ")} > ${sample}_2.fastq.gz
+       kneaddata --input ${reads[0]} --input ${reads[1]} --reference-db /hg37 --output ./ --processes ${task.cpus} --output-prefix ${sample}_kneaddata --trimmomatic /opt/conda/share/trimmomatic
 
-    kneaddata --input ${sample}_1.fastq.gz --input ${sample}_2.fastq.gz --reference-db /hg37 --output ./ --processes ${task.cpus} --output-prefix ${sample}_kneaddata --trimmomatic /opt/conda/share/trimmomatic
-
-    rm ${sample}_1.fastq.gz ${sample}_2.fastq.gz
     gzip *.fastq
     """  
 }
