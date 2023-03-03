@@ -14,7 +14,8 @@ process kneaddata {
     tag "kneaddata $sample"
     publishDir "$params.outdir/kneaddata"
     time { workflow.profile == 'standard' ? null : time * task.attempt }
-
+    memory { workflow.profile == 'standard' ? null : memory * task.attempt }
+    
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
     maxRetries 3
 
@@ -65,9 +66,10 @@ process metaphlan {
  
 process humann {
     tag "humann on $sample"
-    publishDir "$params.outdir/humann/main"
+    publishDir "$params.outdir/humann/"
     memory { workflow.profile == 'standard' ? null : memory * task.attempt }
-
+    cpus { workflow.profile == 'standard' ? null : cpus * task.attempt }
+    
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
     maxRetries 3
 
@@ -82,25 +84,57 @@ process humann {
     path "${sample}_genefamilies.tsv" , emit: genefamilies
     path "${sample}_pathabundance.tsv"
     path "${sample}_pathcoverage.tsv"
+
+    script:
+    """
+    humann --input $catkneads --taxonomic-profile $profile --output ./main --threads ${task.cpus} --remove-temp-output --search-mode uniref90 --output-basename $sample
+    """
+}
+
+process humann_regroup {
+    tag "humann_regroup on $sample"
+    publishDir "$params.outdir/humann/regroup"
+
+    input:
+    val  sample
+    path genefamilies
+
+    output:
+    val  sample , emit: sample
     path "${sample}_ecs.tsv"
     path "${sample}_kos.tsv"
     path "${sample}_pfams.tsv"
+
+    script:
+
+    """
+    humann_regroup_table --input $genefamilies --output ${sample}_ecs.tsv --groups uniref90_level4ec
+    humann_regroup_table --input $genefamilies --output ${sample}_kos.tsv --groups uniref90_ko
+    humann_regroup_table --input $genefamilies --output ${sample}_pfams.tsv --groups uniref90_pfam
+    """
+}   
+
+process humann_rename {
+    tag "humann_rename on $sample"
+    publishDir "$params.outdir/humann/rename"
+
+    input:
+    val  sample
+    path ecs
+    path kos
+    path pfams
+
+    output:
+    val  sample , emit: sample
     path "${sample}_ecs_rename.tsv"
     path "${sample}_kos_rename.tsv"
     path "${sample}_pfams_rename.tsv"
 
-
-
     script:
+
     """
-    humann --input $catkneads --taxonomic-profile $profile --output ./ --threads ${task.cpus} --remove-temp-output --search-mode uniref90 --output-basename $sample
-
-    humann_regroup_table --input ${sample}_genefamilies.tsv --output ${sample}_ecs.tsv --groups uniref90_level4ec
-    humann_regroup_table --input ${sample}_genefamilies.tsv --output ${sample}_kos.tsv --groups uniref90_ko
-    humann_regroup_table --input ${sample}_genefamilies.tsv --output ${sample}_pfams.tsv --groups uniref90_pfam
-
-    humann_rename_table --input ${sample}_ecs.tsv   --output ${sample}_ecs_rename.tsv   --names ec
-    humann_rename_table --input ${sample}_kos.tsv   --output ${sample}_kos_rename.tsv   --names kegg-orthology
-    humann_rename_table --input ${sample}_pfams.tsv --output ${sample}_pfams_rename.tsv --names pfam
+    humann_rename_table --input $ecs   --output ${sample}_ecs_rename.tsv   --names ec
+    humann_rename_table --input $kos   --output ${sample}_kos_rename.tsv   --names kegg-orthology
+    humann_rename_table --input $pfams --output ${sample}_pfams_rename.tsv --names pfam
     """
 }
