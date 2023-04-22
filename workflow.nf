@@ -6,9 +6,9 @@ workflow {
 
     knead_out     = kneaddata(read_pairs_ch)
     metaphlan_out = metaphlan(knead_out[0], knead_out[1])
-    humann_out    = humann(metaphlan_out[0], metaphlan_out[1], metaphlan_out[2])
-    regroup_out   = humann_regroup(humann_out[0], humann_out[1])
-    humann_rename(regroup_out)
+    // humann_out    = humann(metaphlan_out[0], metaphlan_out[1], metaphlan_out[2])
+    // regroup_out   = humann_regroup(humann_out[0], humann_out[1])
+    // humann_rename(regroup_out)
 }
 
 process kneaddata {
