@@ -1,14 +1,16 @@
 #!/usr/bin/env nextflow
 
+nextflow.enable.dsl=2
+
 workflow {
     read_pairs_ch = Channel
         .fromFilePairs("$params.readsdir/$params.filepattern", size: 2)
 
     knead_out     = kneaddata(read_pairs_ch)
     metaphlan_out = metaphlan(knead_out[0], knead_out[1])
-    // humann_out    = humann(metaphlan_out[0], metaphlan_out[1], metaphlan_out[2])
-    // regroup_out   = humann_regroup(humann_out[0], humann_out[1])
-    // humann_rename(regroup_out)
+    humann_out    = humann(metaphlan_out[0], metaphlan_out[1], metaphlan_out[2])
+    regroup_out   = humann_regroup(humann_out[0], humann_out[1])
+    humann_rename(regroup_out)
 }
 
 process kneaddata {
@@ -17,7 +19,7 @@ process kneaddata {
     time { workflow.profile == 'standard' ? null : time * task.attempt }
     memory { workflow.profile == 'standard' ? null : memory * task.attempt }
     
-    errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
+    errorStrategy { task.exitStatus in 134..140 ? 'retry' : 'terminate' }
     maxRetries 3
 
     input:
@@ -34,7 +36,7 @@ process kneaddata {
     """
     echo $sample
 
-       kneaddata --input ${reads[0]} --input ${reads[1]} --reference-db /hg37 --output ./ --processes ${task.cpus} --output-prefix ${sample}_kneaddata --trimmomatic /opt/conda/share/trimmomatic
+    kneaddata --input ${reads[0]} --input ${reads[1]} --reference-db /hg37 --output ./ --processes ${task.cpus} --output-prefix ${sample}_kneaddata --trimmomatic /opt/conda/share/trimmomatic
 
     gzip *.fastq
     """  
@@ -71,7 +73,7 @@ process humann {
     memory { workflow.profile == 'standard' ? null : memory * task.attempt }
     cpus { workflow.profile == 'standard' ? null : cpus * task.attempt }
     
-    errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
+    errorStrategy { task.exitStatus in 134..140 ? 'retry' : 'terminate' }
     maxRetries 3
 
 
@@ -87,9 +89,11 @@ process humann {
     path "${sample}_pathcoverage.tsv"
 
     script:
+
     """
-    humann --input $catkneads --taxonomic-profile $profile --output ./ --threads ${task.cpus} --remove-temp-output --search-mode uniref90 --output-basename $sample
+    humann --input $catkneads --taxonomic-profile $profile --output ./ --threads ${task.cpus} --remove-temp-output --search-mode uniref90 --output-basename $sample 
     """
+    // --nucleotide-database $choco --protein-database $protein
 }
 
 process humann_regroup {
