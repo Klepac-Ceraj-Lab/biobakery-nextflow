@@ -3,55 +3,24 @@
 nextflow.enable.dsl=2
 
 workflow {
-    read_pairs_ch = Channel
+    knead_out = Channel
         .fromFilePairs("$params.readsdir/$params.filepattern", size: 2)
 
-    knead_out     = kneaddata(read_pairs_ch)
-    metaphlan_out = metaphlan(knead_out[0], knead_out[1])
+    metaphlan_out = metaphlan(knead_out)
     metaphlan_bzip = metaphlan_bzip(metaphlan_out[0], metaphlan_out[4])
     humann_out    = humann(metaphlan_out[0], metaphlan_out[1], metaphlan_out[2])
     regroup_out   = humann_regroup(humann_out[0], humann_out[1])
     humann_rename(regroup_out)
 }
 
-process kneaddata {
-    tag "kneaddata $sample"
-    publishDir "$params.outdir/kneaddata"
-    time { workflow.profile == 'standard' ? null : time * task.attempt }
-    memory { workflow.profile == 'standard' ? null : memory * task.attempt }
-    maxForks 4
-
-    errorStrategy 'retry'
-    maxRetries 3
-
-    input:
-    tuple val(sample), path(reads)
-
-    output:
-    val  sample                                          , emit: sample
-    path "${sample}_kneaddata_paired_{1,2}.fastq.gz"     , emit: pairedx
-    path "${sample}_kneaddata*.fastq.gz" , optional:true , emit: others
-    path "${sample}_kneaddata.log"                       , emit: log
-
-    script:
-    
-    """
-    echo $sample
-
-    kneaddata --input ${reads[0]} --input ${reads[1]} --reference-db /hg37 --output ./ --processes ${task.cpus} --output-prefix ${sample}_kneaddata --trimmomatic /opt/conda/share/trimmomatic
-
-    gzip *.fastq
-    """  
-}
 
 process metaphlan {
     tag "metaphlan on $sample"
     publishDir "$params.outdir/metaphlan", pattern: "{*.tsv,*.sam}"
-    maxForks 3
+    maxForks 2
 
     input:
-    val sample
-    path kneads
+    tuple val(sample), path(kneads)
 
     output:
     val  sample                  , emit: sample
