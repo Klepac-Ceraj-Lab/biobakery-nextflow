@@ -28,9 +28,9 @@ process humann {
 
     """
     humann --version
-    ls -lh $humann_bowtie_db
-    humann_config --update database_folders nucleotide $humann_bowtie_db
-    humann_config --update database_folders protein $humann_protein_db
+    ls -lh `realpath $humann_bowtie_db`
+    humann_config --update database_folders nucleotide `realpath $humann_bowtie_db`
+    humann_config --update database_folders protein `realpath $humann_protein_db`
 
     humann --input $catkneads --taxonomic-profile $profile --output ./ \
         --threads ${task.cpus} --remove-temp-output --search-mode uniref90 \
