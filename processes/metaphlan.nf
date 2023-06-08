@@ -37,7 +37,7 @@ process metaphlan {
     tag "metaphlan_bzip on $sample"
     publishDir "$params.outdir/metaphlan"
     maxForks 2
-    stageInMode "link"
+    stageInMode "copy"
 
     input:
     val sample
