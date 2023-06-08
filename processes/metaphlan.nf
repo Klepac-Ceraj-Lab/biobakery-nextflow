@@ -35,3 +35,22 @@ process metaphlan {
     """
 }
  
+ process metaphlan_bzip {
+    tag "metaphlan_bzip on $sample"
+    publishDir "$params.outdir/metaphlan"
+    maxForks 2
+    stageInMode "copy"
+
+    input:
+    val sample
+    path sam
+
+    output:
+    val  sample                  , emit: sample
+    path "${sample}.sam.bz2"
+
+    script:
+    """
+    bzip2 -v $sam
+    """
+}
