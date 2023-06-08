@@ -56,9 +56,9 @@ process humann_regroup {
 
     """
     humann_config database_folders utility_mapping `realpath $humann_utility_db`
-    humann_regroup_table --input $genefamilies --output ${sample}_ecs.tsv --groups uniref90_level4ec --
-    humann_regroup_table --input $genefamilies --output ${sample}_kos.tsv --groups uniref90_ko --
-    humann_regroup_table --input $genefamilies --output ${sample}_pfams.tsv --groups uniref90_pfam --
+    humann_regroup_table --input $genefamilies --output ${sample}_ecs.tsv --groups uniref90_level4ec
+    humann_regroup_table --input $genefamilies --output ${sample}_kos.tsv --groups uniref90_ko
+    humann_regroup_table --input $genefamilies --output ${sample}_pfams.tsv --groups uniref90_pfam
     """
 }   
 
