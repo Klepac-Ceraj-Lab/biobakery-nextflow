@@ -12,7 +12,7 @@ process metaphlan {
     path "${sample}_profile.tsv" , emit: profile
     path "${sample}_grouped.fastq.gz"
     path "${sample}_bowtie2.tsv"
-    path "${sample}.sam"
+    path "${sample}.sam.bz2"
 
     script:
     def forward = kneads[0]
@@ -30,25 +30,8 @@ process metaphlan {
         --input_type fastq \
         --nproc ${task.cpus} \
         --bowtie2db $metaphlan_db
+    
+    bzip2 -v ${sample}.sam
     """
 }
  
- process metaphlan_bzip {
-    tag "metaphlan_bzip on $sample"
-    publishDir "$params.outdir/metaphlan"
-    maxForks 2
-    stageInMode "copy"
-
-    input:
-    val sample
-    path sam
-
-    output:
-    val  sample                  , emit: sample
-    path "${sample}.sam.bz2"
-
-    script:
-    """
-    bzip2 -v $sam
-    """
-}
