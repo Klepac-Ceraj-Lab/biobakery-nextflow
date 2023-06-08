@@ -30,8 +30,6 @@ process metaphlan {
         --input_type fastq \
         --nproc ${task.cpus} \
         --bowtie2db $metaphlan_db
-    
-    bzip2 -v ${sample}.sam
     """
 }
  
