@@ -55,7 +55,7 @@ process humann_regroup {
     script:
 
     """
-    humann_config database_folders utility_mapping `realpath $humann_utility_db`
+    humann_config --update database_folders utility_mapping `realpath $humann_utility_db`
     humann_regroup_table --input $genefamilies --output ${sample}_ecs.tsv --groups uniref90_level4ec
     humann_regroup_table --input $genefamilies --output ${sample}_kos.tsv --groups uniref90_ko
     humann_regroup_table --input $genefamilies --output ${sample}_pfams.tsv --groups uniref90_pfam
@@ -83,7 +83,7 @@ process humann_rename {
     script:
 
     """
-    humann_config database_folders utility_mapping `realpath $humann_utility_db`
+    humann_config --update database_folders utility_mapping `realpath $humann_utility_db`
     humann_rename_table --input $ecs   --output ${sample}_ecs_rename.tsv   --names ec
     humann_rename_table --input $kos   --output ${sample}_kos_rename.tsv   --names kegg-orthology
     humann_rename_table --input $pfams --output ${sample}_pfams_rename.tsv --names pfam
