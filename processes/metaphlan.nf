@@ -12,7 +12,7 @@ process metaphlan {
     path "${sample}_profile.tsv" , emit: profile
     path "${sample}_grouped.fastq.gz"
     path "${sample}_bowtie2.tsv"
-    path "${sample}.sam.bz2"
+    path "${sample}.sam"
 
     script:
     def forward = kneads[0]
