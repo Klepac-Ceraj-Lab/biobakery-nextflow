@@ -19,9 +19,6 @@ process metaphlan {
     def reverse = kneads[1]
 
     """
-    ls -lh $metaphlan_db
-    metaphlan --version
-
     cat $forward $reverse > ${sample}_grouped.fastq.gz
     
     metaphlan ${sample}_grouped.fastq.gz ${sample}_profile.tsv \
