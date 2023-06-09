@@ -1,7 +1,7 @@
 process metaphlan {
     tag "metaphlan on $sample"
     publishDir "$params.outdir/metaphlan", pattern: "{*.tsv,*.sam}"
-    maxForks 2
+    maxForks 4
 
     input:
     tuple val(sample), path(kneads)
@@ -19,9 +19,6 @@ process metaphlan {
     def reverse = kneads[1]
 
     """
-    ls -lh $metaphlan_db
-    metaphlan --version
-
     cat $forward $reverse > ${sample}_grouped.fastq.gz
     
     metaphlan ${sample}_grouped.fastq.gz ${sample}_profile.tsv \
@@ -36,7 +33,7 @@ process metaphlan {
  process metaphlan_bzip {
     tag "metaphlan_bzip on $sample"
     publishDir "$params.outdir/metaphlan"
-    maxForks 2
+    maxForks 4
     stageInMode "copy"
 
     input:
