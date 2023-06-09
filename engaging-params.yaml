@@ -1,0 +1,7 @@
+readsdir: "/pool001/vanja1/nextflow/rawfastq/"
+outdir: "/pool001/vanja1/nextflow/output/"
+human_genome: "/pool001/vanja1/databases/kneaddata/"
+metaphlan_db: "/pool001/vanja1/databases/metaphlan/"
+humann_bowtie_db: "/pool001/vanja1/databases/humann/chocophlan"
+humann_protein_db: "/pool001/vanja1/databases/humann/uniref"
+humann_utility_db: "/pool001/vanja1/databases/humann/utility_mapping"
