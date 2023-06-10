@@ -3,20 +3,22 @@
 nextflow.enable.dsl=2
 
 include { kneaddata } from './processes/kneaddata.nf'
-include { metaphlan, metaphlan_bzip } from './processes/metaphlan.nf'
-include { humann, humann_regroup, humann_rename } from './processes/humann.nf'
+include { metaphlan; metaphlan_bzip } from './processes/metaphlan.nf'
+include { humann; humann_regroup; humann_rename } from './processes/humann.nf'
+
+params.filepattern ? params.filepattern : "*_L00{1,2,3,4}_R{1,2}_001.fastq.gz"
 
 workflow {
-    filepattern = params.filepattern ? params.filepattern : "*_L00{1,2,3,4}_R{1,2}_001.fastq.gz"
+
 
     read_pairs_ch = Channel
         .fromFilePairs("$params.readsdir/$filepattern", size: 2)
 
-    human_genome     = Channel.fromPath( params.human_genome )
-    metaphlan_db      = Channel.fromPath( params.metaphlan_db )
-    humann_bowtie_db  = Channel.fromPath( params.humann_bowtie_db )
-    humann_protein_db = Channel.fromPath( params.humann_protein_db )
-    humann_utility_db = Channel.fromPath( params.humann_utility_db )
+    human_genome     = params.human_genome
+    metaphlan_db      = params.metaphlan_db
+    humann_bowtie_db  = params.humann_bowtie_db
+    humann_protein_db = params.humann_protein_db
+    humann_utility_db = params.humann_utility_db
     
     knead_out     = kneaddata(read_pairs_ch, human_genome)
     metaphlan_out = metaphlan((knead_out[0], knead_out[1]), metaphlan_db)
