@@ -5,7 +5,6 @@ process humann {
     publishDir "$params.outdir/humann/main"
     memory { workflow.profile == 'standard' ? null : memory * task.attempt }
     cpus { workflow.profile == 'standard' ? null : cpus * task.attempt }
-    maxForks 4
 
     errorStrategy { task.exitStatus in 134..140 ? 'retry' : 'terminate' }
     maxRetries 3
@@ -39,7 +38,6 @@ process humann {
 process humann_regroup {
     tag "humann_regroup on $sample"
     publishDir "$params.outdir/humann/regroup"
-    maxForks 2
 
     input:
     val  sample
@@ -65,7 +63,6 @@ process humann_regroup {
 process humann_rename {
     tag "humann_rename on $sample"
     publishDir "$params.outdir/humann/rename"
-    maxForks 2
 
     input:
     val sample

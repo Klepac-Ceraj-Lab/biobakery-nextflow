@@ -3,7 +3,6 @@ process kneaddata {
     publishDir "$params.outdir/kneaddata"
     time { workflow.profile == 'standard' ? null : time * task.attempt }
     memory { workflow.profile == 'standard' ? null : memory * task.attempt }
-    maxForks 4
 
     errorStrategy 'retry'
     maxRetries 3

@@ -1,5 +1,5 @@
-readsdir: "s3://vkc-nextflow/rawfastq/"
-outdir: "s3://vkc-nextflow/output/"
+readsdir: "s3://batch024/rawfastq/"
+outdir: "s3://batch024/output/"
 human_genome: "s3://biobakery-databases/kneaddata_databases/"
 metaphlan_db: "s3://biobakery-databases/metaphlan_databases/"
 humann_bowtie_db: "s3://biobakery-databases/humann_databases/chocophlan"
