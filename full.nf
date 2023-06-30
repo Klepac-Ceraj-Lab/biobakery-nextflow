@@ -9,9 +9,8 @@ include { humann; humann_regroup; humann_rename } from './processes/humann.nf'
 
 workflow {
     
-    filepattern = params.filepattern ? params.filepattern : "*_L00{1,2,3,4}_R{1,2}_001.fastq.gz"
     read_pairs_ch = Channel
-        .fromFilePairs("$params.readsdir/$filepattern", size: 2)
+        .fromFilePairs("$params.readsdir/$params.filepattern", size: 2)
 
     human_genome      = params.human_genome
     metaphlan_db      = params.metaphlan_db
