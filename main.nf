@@ -2,6 +2,7 @@
 
 nextflow.enable.dsl=2
 
+include { kneaddata } from './processes/kneaddata.nf'
 include { metaphlan; metaphlan_bzip } from './processes/metaphlan.nf'
 include { humann; humann_regroup; humann_rename } from './processes/humann.nf'
 
