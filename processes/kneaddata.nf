@@ -1,4 +1,4 @@
-process kneaddata {
+process kneaddata2 {
     tag "kneaddata $sample"
     publishDir "$params.outdir/kneaddata"
     time { workflow.profile == 'standard' ? null : time * task.attempt }
