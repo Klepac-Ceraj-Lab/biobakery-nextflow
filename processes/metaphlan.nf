@@ -3,8 +3,7 @@ process metaphlan {
     publishDir "$params.outdir/metaphlan", pattern: "{*.tsv,*.sam}"
 
     input:
-    val sample
-    path kneads
+    tuple val(sample), path(kneads)
     path metaphlan_db
 
     output:

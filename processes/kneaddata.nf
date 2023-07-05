@@ -12,8 +12,7 @@ process kneaddata {
     path human_genome
 
     output:
-    val  sample                                          , emit: sample
-    path "${sample}_kneaddata_paired_{1,2}.fastq.gz"     , emit: pairedx
+    tuple val(sample) path("${sample}_kneaddata_paired_{1,2}.fastq.gz")
     path "${sample}_kneaddata*.fastq.gz" , optional:true , emit: others
     path "${sample}_kneaddata.log"                       , emit: log
 
