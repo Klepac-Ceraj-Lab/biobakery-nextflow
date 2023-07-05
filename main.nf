@@ -10,6 +10,7 @@ workflow {
     read_pairs_ch = Channel
         .fromFilePairs("$params.readsdir/$params.filepattern", size: 2)
 
+    human_genome      = params.human_genome
     metaphlan_db      =  params.metaphlan_db 
     humann_bowtie_db  =  params.humann_bowtie_db 
     humann_protein_db =  params.humann_protein_db 
