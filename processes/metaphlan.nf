@@ -14,11 +14,9 @@ process metaphlan {
     path "${sample}.sam"
 
     script:
-    def forward = kneads[0]
-    def reverse = kneads[1]
 
     """
-    cat $forward $reverse > ${sample}_grouped.fastq.gz
+    cat $kneads > ${sample}_grouped.fastq.gz
     
     metaphlan ${sample}_grouped.fastq.gz ${sample}_profile.tsv \
         --bowtie2out ${sample}_bowtie2.tsv \
