@@ -21,10 +21,10 @@ process kneaddata {
     """
     echo $sample
 
-    kneaddata -v --input1 ${reads[0]} --input2 ${reads[1]} \
+    kneaddata -v --input ${reads[0]} --input ${reads[1]} \
               --reference-db ${human_genome} --output ./ \
               --processes ${task.cpus} --output-prefix ${sample}_kneaddata \
-              --trimmomatic /opt/conda/bin
+              --trimmomatic /opt/conda/share/trimmomatic
 
     gzip *.fastq
     """  

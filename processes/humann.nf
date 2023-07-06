@@ -1,5 +1,3 @@
-
-
 process humann {
     tag "humann on $sample"
     publishDir "$params.outdir/humann/main"
