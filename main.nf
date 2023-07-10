@@ -12,10 +12,10 @@ workflow {
         .fromFilePairs("$params.readsdir/$params.filepattern", size: 2)
 
     human_genome      = params.human_genome
-    metaphlan_db      = params.metaphlan_db 
-    humann_bowtie_db  = params.humann_bowtie_db 
-    humann_protein_db = params.humann_protein_db 
-    humann_utility_db = params.humann_utility_db 
+    metaphlan_db      = params.metaphlan_db
+    humann_bowtie_db  = params.humann_bowtie_db
+    humann_protein_db = params.humann_protein_db
+    humann_utility_db = params.humann_utility_db
     
     knead_out     = kneaddata(read_pairs_ch, human_genome)
     metaphlan_out = metaphlan(knead_out[0], metaphlan_db)
