@@ -1,9 +1,10 @@
 process metaphlan {
     tag "metaphlan on $sample"
-    publishDir "$params.outdir/metaphlan", pattern: "{*.tsv,*.sam}"
+    publishDir "$params.outdir/metaphlan", pattern: "{*.tsv}"
 
     input:
     tuple val(sample), path(kneads)
+    path unmatched
     path metaphlan_db
 
     output:
@@ -16,9 +17,11 @@ process metaphlan {
     script:
     def forward = kneads[0]
     def reverse = kneads[1]
+    def unf = unmatched[0]
+    def unr = unmatched[1]
 
     """
-    cat $forward $reverse > ${sample}_grouped.fastq.gz
+    cat $forward $reverse $unf $unr > ${sample}_grouped.fastq.gz
     
     metaphlan ${sample}_grouped.fastq.gz ${sample}_profile.tsv \
         --bowtie2out ${sample}_bowtie2.tsv \
