@@ -1,4 +1,4 @@
-process kneaddata2 {
+process kneaddata {
     tag "kneaddata $sample"
     publishDir "$params.outdir/kneaddata"
     time { workflow.profile == 'standard' ? null : time * task.attempt }
@@ -12,12 +12,12 @@ process kneaddata2 {
     path human_genome
 
     output:
-    tuple val(sample) path("${sample}_kneaddata_paired_{1,2}.fastq.gz")
+    tuple val(sample), path("${sample}_kneaddata_paired_{1,2}.fastq.gz")
     path "${sample}_kneaddata_unmatched_{1,2}.fastq.gz"
     path "${sample}_kneaddata*.fastq.gz" , optional:true , emit: others
     path "${sample}_kneaddata.log"                       , emit: log
 
-    script:
+    shell:
     
     """
     echo $sample
