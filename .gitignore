@@ -1,4 +1,22 @@
 test/output/*
+test/results/*
 .nextflow*
 work/*
+test/work/
+work_test*/
 output/*
+.DS_Store
+results/
+
+# run logs
+test/tutorial_run.log
+
+# large intermediate files in tutorial output
+test/tutorial_output/**/*.sam
+test/tutorial_output/**/*.sam.bz2
+test/tutorial_output/kneaddata/*.fastq.gz
+test/tutorial_output/metaphlan/mpa_vOct22_CHOCOPhlAnSGB_202403/
+test/tutorial_output/**/.anadama/
+# python bytecode from the bin/scripts helpers
+__pycache__/
+*.pyc

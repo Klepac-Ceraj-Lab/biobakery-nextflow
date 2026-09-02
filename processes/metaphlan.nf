@@ -25,8 +25,13 @@ process metaphlan {
     }else if (mp_ver == 'metaphlan_v3'){
         db_arg = 'bowtie2db'
         out_arg = 'bowtie2out'
+    }else if (mp_ver == 'metaphlan_4.0.6_fixed'){
+        // MetaPhlAn 4.0.6_vOct22_fixed uses v3-style flags (--bowtie2db / --bowtie2out)
+        // Use with mpa_vOct22_CHOCOPhlAnSGB_202403 on Harvard FASRC
+        db_arg = 'bowtie2db'
+        out_arg = 'bowtie2out'
     }else {
-        throw new Exception("The metaphlan_version must be 'metaphlan_v4' or 'metaphlan_v3', got '${mp_ver}'")
+        throw new Exception("The metaphlan_version must be 'metaphlan_v4', 'metaphlan_v3', or 'metaphlan_4.0.6_fixed', got '${mp_ver}'")
     }
     
     // Run metaphlan on samples

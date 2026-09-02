@@ -23,7 +23,7 @@ process single_end_kneaddata {
     echo $sample
 
     kneaddata --unpaired $reads \
-              --reference-db ${params.human_genome} --output ./ \
+              --reference-db ${params.host_genome} --output ./ \
               --threads ${task.cpus} --output-prefix ${sample}_kneaddata
 
     gzip ${sample}_kneaddata*.fastq
@@ -66,7 +66,7 @@ process paired_end_kneaddata {
     echo $reads
 
     kneaddata -i1 ${reads[0]} -i2 ${reads[1]} \
-              --reference-db ${params.human_genome} --output ./ \
+              --reference-db ${params.host_genome} --output ./ \
               --processes ${task.cpus} --output-prefix ${sample}_kneaddata
 
     gzip ${sample}_kneaddata*.fastq

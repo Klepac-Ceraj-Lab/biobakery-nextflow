@@ -17,19 +17,21 @@ process humann {
     val  sample                       , emit: sample
     path "${sample}_genefamilies_${params.humann_version}.tsv" , emit: genefamilies
     path "${sample}_${params.humann_version}.log", optional:true           
-    path "${sample}_reactions_${params.humann_version}.tsv"
+    path "${sample}_reactions_${params.humann_version}.tsv" , optional: true
     path "${sample}_pathabundance_${params.humann_version}.tsv"
     path "${sample}_pathcoverage_${params.humann_version}.tsv", optional:true
 
     script:
+    // --utility-database was added in HUMAnN4; humann3.x only takes nucleotide/protein databases
+    def utility_db_arg = params.humann_version == 'humann_v4a' ? "--utility-database ${params.humann_db}/utility_mapping" : ""
 
     """
     humann --input $catkneads --taxonomic-profile $profile --output ./ \
         --threads ${task.cpus} --remove-temp-output \
         --protein-database ${params.humann_db}/uniref \
         --nucleotide-database ${params.humann_db}/chocophlan \
-        --utility-database ${params.humann_db}/utility_mapping \
-        --output-basename $sample 
+        $utility_db_arg \
+        --output-basename $sample
 
     if [[ "$params.humann_version" == 'humann_v4a' ]]; then 
         mv "${sample}_2_genefamilies.tsv" "${sample}_genefamilies_${params.humann_version}.tsv" 
